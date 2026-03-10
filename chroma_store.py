@@ -1,4 +1,8 @@
 import chromadb
+from openai import OpenAI
+import os 
+
+client = OpenAI(api_key=os.getenv("OPENAI_API_KEY"))
 
 chroma_client = chromadb.Client()
 
@@ -7,27 +11,39 @@ collection = chroma_client.get_or_create_collection(
 )
 
 
-def store_chunks(chunks):
+def store_chunks(chunks, pages):
 
     for i, chunk in enumerate(chunks):
 
-        fake_embedding = [0.1] * 1536
+        emb = client.embeddings.create(
+            model="text-embedding-3-small",
+            input=chunk
+        )
+
+        embedding = emb.data[0].embedding
 
         collection.add(
             documents=[chunk],
-            embeddings=[fake_embedding],
-            ids=[str(i)]
+            embeddings=[embedding],
+            ids=[str(i)],
+            metadatas=[{"page": pages[i]}]
         )
 
     return len(chunks)
 
+
 def search_chunks(question):
 
-    fake_embedding = [0.1] * 1536
+    emb = client.embeddings.create(
+        model="text-embedding-3-small",
+        input=question
+    )
+
+    query_embedding = emb.data[0].embedding
 
     results = collection.query(
-        query_embeddings=[fake_embedding],
+        query_embeddings=[query_embedding],
         n_results=5
     )
 
-    return results["documents"][0]
+    return results
