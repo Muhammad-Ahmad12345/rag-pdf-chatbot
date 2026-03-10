@@ -4,6 +4,7 @@ import os
 
 from pdf_processor import extract_text_from_pdf, chunk_text
 from chroma_store import store_chunks
+from rag_engine import ask_question
 
 app = FastAPI()
 
@@ -33,5 +34,13 @@ async def upload_pdf(file: UploadFile = File(...)):
     return {
         "message": "Document processed",
         "chunks": total
+    }
+
+@app.post("/ask")
+def ask(data: dict):
+    question = data["question"]
+    answer = ask_question(question)
+    return {
+        "answer": answer
     }
 

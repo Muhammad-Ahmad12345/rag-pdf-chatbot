@@ -11,7 +11,6 @@ def store_chunks(chunks):
 
     for i, chunk in enumerate(chunks):
 
-        # temporary fake embedding
         fake_embedding = [0.1] * 1536
 
         collection.add(
@@ -21,3 +20,14 @@ def store_chunks(chunks):
         )
 
     return len(chunks)
+
+def search_chunks(question):
+
+    fake_embedding = [0.1] * 1536
+
+    results = collection.query(
+        query_embeddings=[fake_embedding],
+        n_results=5
+    )
+
+    return results["documents"][0]
