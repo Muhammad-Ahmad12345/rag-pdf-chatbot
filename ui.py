@@ -1,25 +1,45 @@
 import streamlit as st
 import requests
 
-st.title("PDF Chatbot")
+API_URL = "http://localhost:8000"
 
-pdf = st.file_uploader("Upload PDF")
+st.title("📄 RAG PDF Chatbot")
 
-if pdf:
+st.write("Upload a PDF and ask questions about the document.")
 
-    files = {"file": pdf}
+uploaded_file = st.file_uploader("Upload PDF", type="pdf")
 
-    res = requests.post("http://localhost:8000/upload", files=files)
+if uploaded_file:
 
-    st.write(res.json())
+    files = {"file": uploaded_file}
 
-question = st.text_input("Ask question")
+    with st.spinner("Processing document..."):
+
+        response = requests.post(
+            f"{API_URL}/upload",
+            files=files
+        )
+
+        st.success(response.json()["message"])
+        st.write(f"Chunks created: {response.json()['chunks']}")
+
+question = st.text_input("Ask a question about the document")
 
 if st.button("Ask"):
 
-    res = requests.post(
-        "http://localhost:8000/ask",
-        json={"question": question}
-    )
+    if question:
 
-    st.write(res.json()["answer"])
+        with st.spinner("Searching document..."):
+
+            response = requests.post(
+                f"{API_URL}/ask",
+                json={"question": question}
+            )
+
+            result = response.json()
+
+            st.subheader("Answer")
+            st.write(result["answer"])
+
+            st.subheader("Sources (Page Numbers)")
+            st.write(result["sources"])
