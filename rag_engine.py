@@ -4,37 +4,30 @@ import os
 
 client = OpenAI(api_key=os.getenv("OPENAI_API_KEY"))
 
-
-def ask_question(question):
-
-    results = search_chunks(question)
-
-    chunks = results["documents"][0]
-    pages = results["metadatas"][0]
+def generate_answer(question, chunks):
 
     context = "\n\n".join(chunks)
 
     prompt = f"""
-Answer using only the context below.
-If answer not found say 'Not found in document'.
+You are a helpful assistant.
+
+Use ONLY the context below to answer the question.
+
+If the answer is partially available, provide the best possible answer using the context.
 
 Context:
 {context}
 
 Question:
 {question}
+
+Answer clearly using the document.
 """
 
     response = client.chat.completions.create(
         model="gpt-4o-mini",
         temperature=0,
-        messages=[
-            {"role": "user", "content": prompt}
-        ]
+        messages=[{"role": "user", "content": prompt}]
     )
 
-    answer = response.choices[0].message.content
-
-    sources = list(set([p["page"] for p in pages]))
-
-    return answer, sources
+    return response.choices[0].message.content
