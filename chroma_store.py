@@ -1,15 +1,17 @@
 import chromadb
 from openai import OpenAI
 import os 
+from chromadb.config import Settings
 
 client = OpenAI(api_key=os.getenv("OPENAI_API_KEY"))
 
-chroma_client = chromadb.Client()
+chroma_client = chromadb.Client(
+    Settings(persist_directory="./chroma")
+)
 
 collection = chroma_client.get_or_create_collection(
     name="pdf_documents"
 )
-
 
 def store_chunks(chunks, pages):
 
@@ -30,7 +32,6 @@ def store_chunks(chunks, pages):
         )
 
     return len(chunks)
-
 
 def search_chunks(question):
 

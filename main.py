@@ -11,14 +11,13 @@ load_dotenv()
 
 api_key = os.getenv("OPENAI_API_KEY")
 
-print("OPENAI_API_KEY:", api_key)  # Debugging line to check if the API key is loaded
+print("OPENAI_API_KEY:", api_key)  
 
 app = FastAPI()
 
 UPLOAD_DIR = "data"
 
 os.makedirs(UPLOAD_DIR, exist_ok=True)
-
 
 @app.post("/upload")
 async def upload_pdf(file: UploadFile = File(...)):
