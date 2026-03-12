@@ -1,7 +1,7 @@
 import streamlit as st
 import requests
 
-API_URL = "https://rag-pdf-chatbot-i42b.onrender.com/docs"
+API_URL = "https://rag-pdf-chatbot-i42b.onrender.com"
 
 st.title("📄 RAG PDF Chatbot")
 
