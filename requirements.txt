@@ -2,7 +2,7 @@ fastapi
 uvicorn
 openai
 chromadb
-pypdf
+pymupdf
 streamlit
 tiktoken
 python-multipart

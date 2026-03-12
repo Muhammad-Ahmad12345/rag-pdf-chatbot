@@ -1,19 +1,23 @@
-from pypdf import PdfReader
+import fitz
+import re
 
 
 def extract_text_from_pdf(file_path):
 
-    reader = PdfReader(file_path)
+    doc = fitz.open(file_path)
 
     pages = []
 
-    for i, page in enumerate(reader.pages):
+    for page_num in range(len(doc)):
 
-        text = page.extract_text()
+        page = doc.load_page(page_num)
 
-        if text:
+        text = page.get_text("text")
+
+        if text.strip():
+
             pages.append({
-                "page": i + 1,
+                "page": page_num + 1,
                 "text": text
             })
 
@@ -21,23 +25,24 @@ def extract_text_from_pdf(file_path):
 
 
 def chunk_text(text, chunk_size=700, overlap=100):
-
-    words = text.split()
+    paragraphs = re.split(r'\n\s*\n', text)
 
     chunks = []
+    current_chunk = ""
 
-    start = 0
+    for para in paragraphs:
 
-    while start < len(words):
+        if len(current_chunk) + len(para) < chunk_size:
 
-        end = start + chunk_size
+            current_chunk += " " + para
 
-        chunk_words = words[start:end]
+        else:
 
-        chunk = " ".join(chunk_words)
+            chunks.append(current_chunk.strip())
 
-        chunks.append(chunk)
+            current_chunk = para
 
-        start += chunk_size - overlap
+    if current_chunk:
+        chunks.append(current_chunk.strip())
 
     return chunks

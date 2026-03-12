@@ -1,26 +1,21 @@
 from fastapi import FastAPI, UploadFile, File
 import shutil
 import os
-from dotenv import load_dotenv
 
 from pdf_processor import extract_text_from_pdf, chunk_text
-from chroma_store import store_chunks
-from rag_engine import ask_question
-
-load_dotenv()
-
-api_key = os.getenv("OPENAI_API_KEY")
-
-print("OPENAI_API_KEY:", api_key)  
+from chroma_store import store_chunks, search_chunks, reset_collection
+from rag_engine import generate_answer
 
 app = FastAPI()
 
-UPLOAD_DIR = "data"
-
+UPLOAD_DIR = "uploads"
 os.makedirs(UPLOAD_DIR, exist_ok=True)
+
 
 @app.post("/upload")
 async def upload_pdf(file: UploadFile = File(...)):
+
+    reset_collection()
 
     file_path = os.path.join(UPLOAD_DIR, file.filename)
 
@@ -32,12 +27,13 @@ async def upload_pdf(file: UploadFile = File(...)):
     all_chunks = []
     all_pages = []
 
-    for page in pages:
-        chunks = chunk_text(page["text"])
-        for c in chunks:
-         all_chunks.append(c)
-        all_pages.append(page["page"])
+    for p in pages:
 
+        chunks = chunk_text(p["text"])
+
+        for c in chunks:
+            all_chunks.append(c)
+            all_pages.append(p["page"])
 
     total = store_chunks(all_chunks, all_pages)
 
@@ -46,14 +42,21 @@ async def upload_pdf(file: UploadFile = File(...)):
         "chunks": total
     }
 
+
 @app.post("/ask")
-def ask(data: dict):
+async def ask_question(data: dict):
 
     question = data["question"]
 
-    answer, sources = ask_question(question)
+    results = search_chunks(question)
+
+    chunks = results["documents"][0]
+
+    pages = [m["page"] for m in results["metadatas"][0]]
+
+    answer = generate_answer(question, chunks)
 
     return {
         "answer": answer,
-        "sources": sources
+        "sources": pages
     }
