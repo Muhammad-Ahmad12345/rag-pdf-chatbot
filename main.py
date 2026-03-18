@@ -11,9 +11,6 @@ app = FastAPI()
 UPLOAD_DIR = "uploads"
 os.makedirs(UPLOAD_DIR, exist_ok=True)
 
-@app.get("/")
-def health():
-    return {"status": "ok"}
 
 @app.post("/upload")
 async def upload_pdf(file: UploadFile = File(...)):
@@ -53,13 +50,8 @@ async def ask_question(data: dict):
 
     results = search_chunks(question)
 
-    if not results["documents"] or len(results["documents"][0]) == 0:
-        return {
-            "answer": "No relevant information found. Please upload document again.",
-            "sources": []
-        }
-
     chunks = results["documents"][0]
+
     pages = [m["page"] for m in results["metadatas"][0]]
 
     answer = generate_answer(question, chunks)
