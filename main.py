@@ -11,6 +11,9 @@ app = FastAPI()
 UPLOAD_DIR = "uploads"
 os.makedirs(UPLOAD_DIR, exist_ok=True)
 
+@app.get("/")
+def health():
+    return {"status": "ok"}
 
 @app.post("/upload")
 async def upload_pdf(file: UploadFile = File(...)):

@@ -1,10 +1,15 @@
 import chromadb
 from openai import OpenAI
 import os
+from chromadb.config import Settings
 
 client = OpenAI(api_key=os.getenv("OPENAI_API_KEY"))
 
-chroma_client = chromadb.Client()
+chroma_client = chromadb.Client(
+    Settings(
+        persist_directory="./chroma"
+    )
+)
 
 collection = chroma_client.get_or_create_collection(name="rag_collection")
 
@@ -36,7 +41,7 @@ def store_chunks(chunks, pages):
         documents=chunks,
         metadatas=[{"page": p} for p in pages]
     )
-
+    chroma_client.persist()
     return len(chunks)
 
 
