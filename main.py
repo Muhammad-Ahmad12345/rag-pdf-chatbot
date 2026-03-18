@@ -53,8 +53,13 @@ async def ask_question(data: dict):
 
     results = search_chunks(question)
 
-    chunks = results["documents"][0]
+    if not results["documents"] or len(results["documents"][0]) == 0:
+        return {
+            "answer": "No relevant information found. Please upload document again.",
+            "sources": []
+        }
 
+    chunks = results["documents"][0]
     pages = [m["page"] for m in results["metadatas"][0]]
 
     answer = generate_answer(question, chunks)

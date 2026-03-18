@@ -16,9 +16,11 @@ collection = chroma_client.get_or_create_collection(name="rag_collection")
 
 def reset_collection():
     global collection
-    chroma_client.delete_collection("rag_collection")
+    try:
+        chroma_client.delete_collection("rag_collection")
+    except:
+        pass
     collection = chroma_client.create_collection("rag_collection")
-
 
 def store_chunks(chunks, pages):
 
